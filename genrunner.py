@@ -38,6 +38,7 @@ class GeneratorRunner(object):
 
         """
         self.running = True
+        self.stop_event.clear()
         self.future = executor.submit(self._stoppable_run)
         self.future.add_done_callback(self._done_callback)
 
