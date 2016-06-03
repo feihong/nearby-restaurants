@@ -40,11 +40,10 @@ def nearby_restaurants(address, send):
         openNow=1,
         sortByDistance=1,
     )
-    resp = client.venues.explore(params=params)
-    with open('output.json', 'w') as fp:
-        import json
-        fp.write(json.dumps(resp, indent=2))
-
+    # resp = client.venues.explore(params=params)
+    import json
+    resp = json.load(open('sample_response.json'))
+    
     for group in resp['groups']:
         for item in group['items']:
             venue = item['venue']
