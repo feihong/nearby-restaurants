@@ -1,5 +1,5 @@
 import json
-from browser.html import P
+from browser.html import *
 from browser import document, window
 from browser.ajax import ajax
 from browser.websocket import WebSocket
@@ -21,8 +21,13 @@ def on_open(evt):
 
 def on_message(evt):
     obj = json.loads(evt.data)
-    print(obj)
-    restaurant_list <= P(obj['name'])
+    if obj.get('type') == 'console':
+        print(obj['value'])
+    else:
+        print(obj['name'])
+        restaurant_list <= LI(
+            A(obj['name'], href=obj['url']),
+        )
 
 
 main()
