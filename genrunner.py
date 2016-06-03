@@ -1,5 +1,3 @@
-import random
-import time
 import functools
 import threading
 import json
@@ -8,7 +6,6 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib2 import Path
 from tornado.ioloop import IOLoop
 from tornado.web import Application, RequestHandler, StaticFileHandler
-from tornado import gen
 from tornado.websocket import WebSocketHandler
 
 
@@ -20,6 +17,7 @@ class GeneratorRunner(object):
         self.stop_event = threading.Event()
         self.future = None
         self.func = func
+        self.running = False
 
     def cancel(self):
         self.stop_event.set()
@@ -27,95 +25,36 @@ class GeneratorRunner(object):
     def done(self):
         return self.stop_event.is_set()
 
-    def run(self):
-        """
-        Run the generator function synchronously.
-
-        """
-        def noop(*args, **kwargs):
-            pass
-        for _ in self.func(noop):
-            pass
-
-    def run_web(self, port=8000):
+    def run(self, port=8000):
         loop = IOLoop.current()
         # Open the web browser after waiting a second for the server to start up.
         loop.call_later(1.0, webbrowser.open, 'http://localhost:%s' % port)
-        start_server()
+        loop, self.send = init_server(self, port)
+        loop.start()
 
     def start(self):
         """
         Run the generator function in a separate thread.
 
         """
+        self.running = True
         self.future = executor.submit(self._stoppable_run)
-        self.add_done_callback(self._done_callback)
-
-    def add_done_callback(self, callback):
-        if self.future:
-            self.future.add_done_callback(callback)
+        self.future.add_done_callback(self._done_callback)
 
     def _stoppable_run(self):
-        for obj in self.func():
+        for _ in self.func(self.send):
             if self.stop_event.is_set():
                 break
-            self.log(obj)
         self.stop_event.set()
 
     def _done_callback(self, future):
         # If there was an exception inside of self._stoppable_run, then it won't
         # be raised until you call future.result().
+        self.running = False
         try:
             future.result()
         except Exception as ex:
-            self.log('Error: %s' % ex)
-
-
-class WebSocketLoggingTask(GeneratorTask):
-    def __init__(self, func, logger):
-        super(WebSocketLoggingTask, self).__init__(func)
-        loop = IOLoop.current()
-        self.log = functools.partial(loop.add_callback, logger.info)
-
-
-# class MainHandler(RequestHandler):
-#     def get(self):
-#         self.render('index.html')
-
-
-class StartHandler(RequestHandler):
-    def get(self):
-        count = int(self.get_query_argument('count', 5))
-        app = self.application
-        if not app.current_task:
-            app.current_task = WebSocketLoggingTask(
-                functools.partial(generate_chinese_characters, count),
-                app.logger)
-            app.current_task.start()
-            self.write('Started background task')
-            # Set app.current_task to None when task finishes.
-            def done_callback(future):
-                app.current_task = None
-            app.current_task.add_done_callback(done_callback)
-
-
-class StopHandler(RequestHandler):
-    def get(self):
-        app = self.application
-        if app.current_task:
-            app.current_task.cancel()
-            self.write('Stopping background task...')
-            app.logger.info('Stopping background task...')
-
-
-class StatusHandler(WebSocketHandler):
-    def open(self):
-        print('WebSocket opened')
-        self.application.sockets.add(self)
-
-    def on_close(self):
-        print('WebSocket closed')
-        self.application.sockets.remove(self)
+            self.send('Error: %s' % ex)
 
 
 class WebSocketWriter:
@@ -124,16 +63,41 @@ class WebSocketWriter:
 
     def send(self, obj):
         if isinstance(obj, basestring):
-            obj = dict(type='message', value=obj)
+            obj = dict(type='console', value=obj)
         data = json.dumps(obj)
         for socket in self.sockets:
             socket.write_message(data)
 
 
+class StartHandler(RequestHandler):
+    def get(self):
+        app = self.application
+        if not app.runner.running:
+            print('Starting...')
+            app.runner.start()
+
+
+class StopHandler(RequestHandler):
+    def get(self):
+        app = self.application
+        if app.runner.running:
+            print('Stopping...')
+            app.runner.stop()
+
+
+class StatusHandler(WebSocketHandler):
+    def open(self):
+        self.application.sockets.add(self)
+
+    def on_close(self):
+        self.application.sockets.remove(self)
+
+
 class NoCacheStaticFileHandler(StaticFileHandler):
     def __init__(self, *args, **kwargs):
+        static_dir = Path(__file__).parent / 'static'
         kwargs.update(
-            path=str(Path(__file__).parent.absolute()),
+            path=str(static_dir.absolute()),
             default_filename='index.html',
         )
         super(NoCacheStaticFileHandler, self).__init__(*args, **kwargs)
@@ -142,7 +106,7 @@ class NoCacheStaticFileHandler(StaticFileHandler):
         self.set_header('Cache-control', 'no-cache')
 
 
-def start_server(port):
+def init_server(runner, port):
     settings = dict(
         debug=True,
         autoreload=True,
@@ -153,10 +117,13 @@ def start_server(port):
         (r'/status/', StatusHandler),
         (r'/(.*)', NoCacheStaticFileHandler),
     ], **settings)
+    app.runner = runner
     app.sockets = set()
-    app.current_task = None
-    app.ws_writer = WebSocketWriter(app.sockets)
+    ws_writer = WebSocketWriter(app.sockets)
+    app.ws_writer = ws_writer
 
     app.listen(port)
     loop = IOLoop.current()
-    loop.start()
+
+    thread_safe_send = functools.partial(loop.add_callback, ws_writer.send)
+    return loop, thread_safe_send
