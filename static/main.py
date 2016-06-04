@@ -33,13 +33,13 @@ def on_message(evt):
             except KeyError:
                 pass
         if url:
-            li <= P(A(obj['name'], href=url))
+            li <= A(obj['name'], href=url)
         else:
-            li <= P(obj['name'])
-        li <= P(obj['location']['formattedAddress'][0])
+            li <= B(obj['name'])
+        li <= DIV(obj['location']['address'])
         categories = (c['shortName'] for c in obj['categories'])
-        li <= P('Category: ' + ', '.join(categories))
-        li <= P('Rating: %s' % obj['rating'])
+        li <= DIV('Category: ' + ', '.join(categories))
+        li <= DIV('Rating: %s' % obj['rating'])
         restaurant_list <= li
 
 
