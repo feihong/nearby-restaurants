@@ -27,10 +27,13 @@ def on_message(evt):
         # print(obj['name'])
         restaurant_list <= LI(
             get_img(obj) +
-            get_name_el(obj) +
-            DIV(obj['location']['address']) +
-            get_category_div(obj) +
-            DIV('Rating: %s' % obj['rating'])
+            DIV(
+                get_name_el(obj) +
+                DIV(obj['location']['address']) +
+                get_category_div(obj) +
+                DIV('Rating: %s' % obj['rating']),
+                Class='info'
+            )
         )
 
 
