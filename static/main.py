@@ -25,8 +25,12 @@ def on_message(evt):
         print(obj['value'])
     else:
         print(obj['name'])
+        categories = (c['shortName'] for c in obj['categories'])
         restaurant_list <= LI(
-            A(obj['name'], href=obj['url']),
+            P(A(obj['name'], href=obj['url'])) +
+            P(obj['location']['formattedAddress'][0]) +
+            P('Category: ' + ', '.join(categories)) +
+            P('Rating: %s' % obj['rating'])
         )
 
 
