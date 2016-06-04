@@ -24,14 +24,23 @@ def on_message(evt):
     if obj.get('type') == 'console':
         print(obj['value'])
     else:
-        print(obj['name'])
+        # print(obj['name'])
+        li = LI()
+        url = obj.get('url')
+        if not url:
+            try:
+                url = obj['menu']['url']
+            except KeyError:
+                pass
+        if url:
+            li <= P(A(obj['name'], href=url))
+        else:
+            li <= P(obj['name'])
+        li <= P(obj['location']['formattedAddress'][0])
         categories = (c['shortName'] for c in obj['categories'])
-        restaurant_list <= LI(
-            P(A(obj['name'], href=obj['url'])) +
-            P(obj['location']['formattedAddress'][0]) +
-            P('Category: ' + ', '.join(categories)) +
-            P('Rating: %s' % obj['rating'])
-        )
+        li <= P('Category: ' + ', '.join(categories))
+        li <= P('Rating: %s' % obj['rating'])
+        restaurant_list <= li
 
 
 main()
