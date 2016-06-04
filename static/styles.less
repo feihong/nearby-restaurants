@@ -1,4 +1,18 @@
+html {
+  height: 100%;
+}
+
+body {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
 #rlist {
+  overflow-y: scroll;
+
   li {
     display: flex;
     padding: 5px 0;
@@ -11,5 +25,5 @@
 }
 
 #map {
-  height: 100%;
+  flex: 1;
 }
