@@ -25,22 +25,30 @@ def on_message(evt):
         print(obj['value'])
     else:
         # print(obj['name'])
-        li = LI()
-        url = obj.get('url')
-        if not url:
-            try:
-                url = obj['menu']['url']
-            except KeyError:
-                pass
-        if url:
-            li <= A(obj['name'], href=url)
-        else:
-            li <= B(obj['name'])
-        li <= DIV(obj['location']['address'])
-        categories = (c['shortName'] for c in obj['categories'])
-        li <= DIV('Category: ' + ', '.join(categories))
-        li <= DIV('Rating: %s' % obj['rating'])
-        restaurant_list <= li
+        restaurant_list <= LI(
+            get_name_el(obj) +
+            DIV(obj['location']['address']) +
+            get_category_div(obj) +
+            DIV('Rating: %s' % obj['rating'])
+        )
+
+
+def get_name_el(venue):
+    url = venue.get('url')
+    if not url:
+        try:
+            url = venue['menu']['url']
+        except KeyError:
+            pass
+    if url:
+        return A(venue['name'], href=url)
+    else:
+        return B(venue['name'])
+
+
+def get_category_div(venue):
+    categories = (c['shortName'] for c in venue['categories'])
+    return DIV('Category: ' + ', '.join(categories))
 
 
 main()
