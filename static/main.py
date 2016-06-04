@@ -5,7 +5,7 @@ from browser.ajax import ajax
 from browser.websocket import WebSocket
 
 
-restaurant_list = document['restaurant-list']
+restaurant_list = document['rlist']
 
 
 def main():
