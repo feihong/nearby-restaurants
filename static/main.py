@@ -26,11 +26,22 @@ def on_message(evt):
     else:
         # print(obj['name'])
         restaurant_list <= LI(
+            get_img(obj) +
             get_name_el(obj) +
             DIV(obj['location']['address']) +
             get_category_div(obj) +
             DIV('Rating: %s' % obj['rating'])
         )
+
+
+def get_img(venue):
+    """
+    How to reassemble the image URL:
+    https://developer.foursquare.com/docs/responses/photo
+
+    """
+    item = venue['featuredPhotos']['items'][0]
+    return IMG(src='%swidth100%s' % (item['prefix'], item['suffix']))
 
 
 def get_name_el(venue):
