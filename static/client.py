@@ -110,7 +110,7 @@ def get_name_el(venue):
         except KeyError:
             pass
     if url:
-        return A(venue['name'], href=url)
+        return A(venue['name'], href=url, target='_blank')
     else:
         return B(venue['name'])
 
