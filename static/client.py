@@ -42,7 +42,7 @@ def on_message(evt):
 def init_map(lat, lng):
     L = window.L
     map = L.map('map')
-    map.setView([lat, lng], 16)
+    map.setView([lat, lng], 15)
     url = 'https://a.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}'
     params = dict(
       attribution='Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
@@ -51,6 +51,21 @@ def init_map(lat, lng):
       accessToken='pk.eyJ1IjoiZmVpaG9uZyIsImEiOiJjaXAwbnI2dmQwMHloeHVtNXd4Y3V0M3FsIn0.cuYLb1WqhxoqlZWyS48u4g'
     )
     L.tileLayer(url, params).addTo(map)
+
+    # Center point.
+    point = L.circleMarker([lat, lng], dict(
+        color='blue',
+        fillColor='blue',
+        fillOpacity=1,
+    )).addTo(map)
+    point.setRadius(5)
+
+    # One mile circle.
+    L.circle([lat, lng], 1600, dict(
+        color='blue',
+        fillColor='grey',
+        fillOpacity=0.2,
+    )).addTo(map)
 
 
 
