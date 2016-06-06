@@ -5,8 +5,19 @@ from browser.ajax import ajax
 from browser.websocket import WebSocket
 
 
-restaurant_list = document['rlist']
-
+restaurant_ul = document['rlist']
+# map = window.L('map') #.setView([41.964241, -87.686005], 16)
+L = window.L
+map = L.map('map')
+map.setView([41.964241, -87.686005], 16)
+url = 'https://a.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}'
+params = dict(
+  attribution='Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
+  maxZoom=18,
+  id='feihong.0abbogke',
+  accessToken='pk.eyJ1IjoiZmVpaG9uZyIsImEiOiJjaXAwbnI2dmQwMHloeHVtNXd4Y3V0M3FsIn0.cuYLb1WqhxoqlZWyS48u4g'
+)
+L.tileLayer(url, params).addTo(map)
 
 def main():
     ws = WebSocket('ws://' + window.location.host + '/status/')
@@ -24,8 +35,7 @@ def on_message(evt):
     if obj.get('type') == 'console':
         print(obj['value'])
     else:
-        # print(obj['name'])
-        restaurant_list <= LI(
+        restaurant_ul <= LI(
             get_img(obj) +
             DIV(
                 get_name_el(obj) +
