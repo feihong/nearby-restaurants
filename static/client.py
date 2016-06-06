@@ -8,7 +8,7 @@ from browser.websocket import WebSocket
 restaurant_ul = document['rlist']
 L = window.L
 map = None
-selected_li = None
+selected = None
 
 
 def main():
@@ -86,15 +86,20 @@ def add_venue(venue):
             Class='info'
         )
     )
+
     def on_click(evt):
-        global selected_li
-        if selected_li:
-            selected_li.class_name = ''
+        global selected
+        if selected:
+            selected['li'].class_name = ''
+            selected['dot'].setStyle(dict(fillColor='red'))
         map.panTo(coords)
         dot.openPopup()
+        dot.setStyle(dict(fillColor='pink'))
+        dot.bringToFront()
         li.class_name = 'yellow'
-        selected_li = li
+        selected = dict(li=li, dot=dot)
     li.bind('click', on_click)
+
     restaurant_ul <= li
 
 
