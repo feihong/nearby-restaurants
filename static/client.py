@@ -8,6 +8,7 @@ from browser.websocket import WebSocket
 restaurant_ul = document['rlist']
 L = window.L
 map = None
+selected_li = None
 
 
 def main():
@@ -85,10 +86,15 @@ def add_venue(venue):
             Class='info'
         )
     )
-    def pan(evt):
+    def on_click(evt):
+        global selected_li
+        if selected_li:
+            selected_li.class_name = ''
         map.panTo(coords)
         dot.openPopup()
-    li.bind('click', pan)
+        li.class_name = 'yellow'
+        selected_li = li
+    li.bind('click', on_click)
     restaurant_ul <= li
 
 
