@@ -30,25 +30,7 @@ def on_message(evt):
         center = geo['center']
         init_map(center['lat'], center['lng'], geo['displayString'])
     else:
-        location = obj['location']
-        restaurant_ul <= LI(
-            get_img(obj) +
-            DIV(
-                get_name_el(obj) +
-                DIV(location['address']) +
-                get_category_div(obj) +
-                DIV('Rating: %s' % obj['rating']),
-                Class='info'
-            )
-        )
-
-        dot = L.circleMarker([location['lat'], location['lng']], dict(
-            color='red',
-            fillColor='red',
-            fillOpacity=1,
-        )).addTo(map)
-        dot.setRadius(5)
-        dot.bindPopup(obj['name'])
+        add_venue(obj)
 
 
 def init_map(lat, lng, address_label):
@@ -79,6 +61,35 @@ def init_map(lat, lng, address_label):
     )).addTo(map)
     dot.setRadius(5)
     dot.bindPopup(address_label)
+
+
+def add_venue(venue):
+    location = venue['location']
+    coords = [location['lat'], location['lng']]
+
+    dot = L.circleMarker(coords, dict(
+        color='red',
+        fillColor='red',
+        fillOpacity=1,
+    )).addTo(map)
+    dot.setRadius(5)
+    dot.bindPopup(venue['name'])
+
+    li = LI(
+        get_img(venue) +
+        DIV(
+            get_name_el(venue) +
+            DIV(location['address']) +
+            get_category_div(venue) +
+            DIV('Rating: %s' % venue['rating']),
+            Class='info'
+        )
+    )
+    def pan(evt):
+        map.panTo(coords)
+        dot.openPopup()
+    li.bind('click', pan)
+    restaurant_ul <= li
 
 
 def get_img(venue):
