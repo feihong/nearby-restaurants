@@ -25,9 +25,10 @@ def on_message(evt):
     obj = json.loads(evt.data)
     if obj.get('type') == 'console':
         print(obj['value'])
-    elif obj.get('type') == 'center':
-        coord = obj['value']
-        init_map(coord['lat'], coord['lng'])
+    elif obj.get('type') == 'geocode':
+        geo = obj['value']
+        center = geo['center']
+        init_map(center['lat'], center['lng'], geo['displayString'])
     else:
         location = obj['location']
         restaurant_ul <= LI(
@@ -41,15 +42,16 @@ def on_message(evt):
             )
         )
 
-        point = L.circleMarker([location['lat'], location['lng']], dict(
+        dot = L.circleMarker([location['lat'], location['lng']], dict(
             color='red',
             fillColor='red',
             fillOpacity=1,
         )).addTo(map)
-        point.setRadius(5)
+        dot.setRadius(5)
+        dot.bindPopup(obj['name'])
 
 
-def init_map(lat, lng):
+def init_map(lat, lng, address_label):
     global map
     map = L.map('map')
     map.setView([lat, lng], 15)
@@ -63,12 +65,13 @@ def init_map(lat, lng):
     L.tileLayer(url, params).addTo(map)
 
     # Center point.
-    point = L.circleMarker([lat, lng], dict(
+    dot = L.circleMarker([lat, lng], dict(
         color='blue',
         fillColor='blue',
         fillOpacity=1,
     )).addTo(map)
-    point.setRadius(5)
+    dot.setRadius(5)
+    dot.bindPopup(address_label)
 
     # One mile circle.
     L.circle([lat, lng], 1600, dict(
