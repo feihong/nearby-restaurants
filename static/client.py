@@ -64,6 +64,13 @@ def init_map(lat, lng, address_label):
     )
     L.tileLayer(url, params).addTo(map)
 
+    # One mile circle.
+    L.circle([lat, lng], 1600, dict(
+        color='blue',
+        fillColor='grey',
+        fillOpacity=0.2,
+    )).addTo(map)
+
     # Center point.
     dot = L.circleMarker([lat, lng], dict(
         color='blue',
@@ -72,13 +79,6 @@ def init_map(lat, lng, address_label):
     )).addTo(map)
     dot.setRadius(5)
     dot.bindPopup(address_label)
-
-    # One mile circle.
-    L.circle([lat, lng], 1600, dict(
-        color='blue',
-        fillColor='grey',
-        fillOpacity=0.2,
-    )).addTo(map)
 
 
 def get_img(venue):
