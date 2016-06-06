@@ -6,6 +6,8 @@ from browser.websocket import WebSocket
 
 
 restaurant_ul = document['rlist']
+L = window.L
+map = None
 
 
 def main():
@@ -27,20 +29,28 @@ def on_message(evt):
         coord = obj['value']
         init_map(coord['lat'], coord['lng'])
     else:
+        location = obj['location']
         restaurant_ul <= LI(
             get_img(obj) +
             DIV(
                 get_name_el(obj) +
-                DIV(obj['location']['address']) +
+                DIV(location['address']) +
                 get_category_div(obj) +
                 DIV('Rating: %s' % obj['rating']),
                 Class='info'
             )
         )
 
+        point = L.circleMarker([location['lat'], location['lng']], dict(
+            color='red',
+            fillColor='red',
+            fillOpacity=1,
+        )).addTo(map)
+        point.setRadius(5)
+
 
 def init_map(lat, lng):
-    L = window.L
+    global map
     map = L.map('map')
     map.setView([lat, lng], 15)
     url = 'https://a.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}'
@@ -66,7 +76,6 @@ def init_map(lat, lng):
         fillColor='grey',
         fillOpacity=0.2,
     )).addTo(map)
-
 
 
 def get_img(venue):
