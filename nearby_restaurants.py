@@ -43,6 +43,7 @@ def nearby_restaurants(address, send):
     # resp = client.venues.explore(params=params)
     import json
     resp = json.load(open('sample_response.json'))
+    send(dict(type='center', value=resp['geocode']['center']))
 
     for group in resp['groups']:
         for item in group['items']:
