@@ -17,7 +17,7 @@ class GeneratorRunner(object):
         self.stop_event = threading.Event()
         self.future = None
         self.func = func
-        self.running = False
+        self.send = None
 
     def cancel(self):
         self.stop_event.set()
@@ -25,11 +25,17 @@ class GeneratorRunner(object):
     def done(self):
         return self.stop_event.is_set()
 
+    def running(self):
+        if self.future:
+            return self.future.running()
+        else:
+            return False
+
     def run(self, port=8000):
         loop = IOLoop.current()
         # Open the web browser after waiting a second for the server to start up.
         loop.call_later(1.0, webbrowser.open, 'http://localhost:%s' % port)
-        loop, self.send = init_server(self, port)
+        self.send = init_server(self, port)
         loop.start()
 
     def start(self):
@@ -37,7 +43,6 @@ class GeneratorRunner(object):
         Run the generator function in a separate thread.
 
         """
-        self.running = True
         self.stop_event.clear()
         self.future = executor.submit(self._stoppable_run)
         self.future.add_done_callback(self._done_callback)
@@ -51,7 +56,6 @@ class GeneratorRunner(object):
     def _done_callback(self, future):
         # If there was an exception inside of self._stoppable_run, then it won't
         # be raised until you call future.result().
-        self.running = False
         try:
             future.result()
         except Exception as ex:
@@ -73,7 +77,7 @@ class WebSocketWriter:
 class StartHandler(RequestHandler):
     def get(self):
         app = self.application
-        if not app.runner.running:
+        if not app.runner.running():
             print('Starting...')
             app.runner.start()
 
@@ -81,7 +85,7 @@ class StartHandler(RequestHandler):
 class StopHandler(RequestHandler):
     def get(self):
         app = self.application
-        if app.runner.running:
+        if app.runner.running():
             print('Stopping...')
             app.runner.stop()
 
@@ -110,7 +114,7 @@ class NoCacheStaticFileHandler(StaticFileHandler):
 def init_server(runner, port):
     settings = dict(
         debug=True,
-        autoreload=True,
+        # autoreload=True,
     )
     app = Application([
         (r'/start/', StartHandler),
@@ -126,5 +130,6 @@ def init_server(runner, port):
     app.listen(port)
     loop = IOLoop.current()
 
+    # Make a send function that can be safely called from other threads.
     thread_safe_send = functools.partial(loop.add_callback, ws_writer.send)
-    return loop, thread_safe_send
+    return thread_safe_send
