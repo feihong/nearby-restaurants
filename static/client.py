@@ -75,7 +75,6 @@ class VenueItem:
             fillOpacity=1,
         )).addTo(map)
         dot.setRadius(5)
-        # dot.bindPopup(venue['name'])
         dot.on('click', self.select_and_scroll)
         self.dot = dot
 
@@ -112,8 +111,13 @@ class VenueItem:
 
     def select_and_scroll(self, evt):
         self.select()
+        ul = jq(restaurant_ul)
         li = jq(self.li)
-        jq(restaurant_ul).scrollTop(li.offset().top)
+        # print(li.find('.info').text())
+        # print(ul.scrollTop())
+        # print(li.offset().top)
+        ul.scrollTop(li.offset().top - ul.offset().top + ul.scrollTop())
+
 
 def get_img(venue):
     """
