@@ -8,7 +8,7 @@ from browser.websocket import WebSocket
 restaurant_ul = document['rlist']
 L = window.L
 map = None
-selected = None
+jq = window.jQuery
 
 
 def main():
@@ -29,7 +29,7 @@ def on_message(evt):
     elif obj.get('type') == 'map_params':
         init_map(obj)
     else:
-        add_venue(obj)
+        VenueItem(obj)
 
 
 def init_map(params):
@@ -62,44 +62,58 @@ def init_map(params):
     dot.bindPopup(params['query_address'])
 
 
-def add_venue(venue):
-    location = venue['location']
-    coords = [location['lat'], location['lng']]
+class VenueItem:
+    selected_item = None
 
-    dot = L.circleMarker(coords, dict(
-        color='red',
-        fillColor='red',
-        fillOpacity=1,
-    )).addTo(map)
-    dot.setRadius(5)
-    dot.bindPopup(venue['name'])
+    def __init__(self, venue):
+        location = venue['location']
+        coords = [location['lat'], location['lng']]
 
-    li = LI(
-        get_img(venue) +
-        DIV(
-            get_name_el(venue) +
-            DIV(location['address']) +
-            get_category_div(venue) +
-            DIV('Rating: %s' % venue['rating']),
-            Class='info'
+        dot = L.circleMarker(coords, dict(
+            color='red',
+            fillColor='red',
+            fillOpacity=1,
+        )).addTo(map)
+        dot.setRadius(5)
+        # dot.bindPopup(venue['name'])
+        dot.on('click', self.select_and_scroll)
+        self.dot = dot
+
+        li = LI(
+            get_img(venue) +
+            DIV(
+                get_name_el(venue) +
+                DIV(location['address']) +
+                get_category_div(venue) +
+                DIV('Rating: %s' % venue['rating']),
+                Class='info'
+            )
         )
-    )
+        li.bind('click', self.select_and_pan)
+        restaurant_ul <= li
+        self.li = li
 
-    def on_click(evt):
-        global selected
-        if selected:
-            selected['li'].class_name = ''
-            selected['dot'].setStyle(dict(fillColor='red'))
-        map.panTo(coords)
-        dot.openPopup()
-        dot.setStyle(dict(fillColor='pink'))
-        dot.bringToFront()
-        li.class_name = 'yellow'
-        selected = dict(li=li, dot=dot)
-    li.bind('click', on_click)
+    def deselect(self):
+        self.dot.setStyle(dict(fillColor='red'))
+        self.li.class_name = ''
 
-    restaurant_ul <= li
+    def select(self):
+        if VenueItem.selected_item:
+            VenueItem.selected_item.deselect()
 
+        self.dot.setStyle(dict(fillColor='yellow'))
+        self.li.class_name = 'yellow'
+        VenueItem.selected_item = self
+
+    def select_and_pan(self, evt):
+        self.select()
+        self.dot.bringToFront()
+        map.panTo(self.dot.getLatLng())
+
+    def select_and_scroll(self, evt):
+        self.select()
+        li = jq(self.li)
+        jq(restaurant_ul).scrollTop(li.offset().top)
 
 def get_img(venue):
     """
