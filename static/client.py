@@ -101,12 +101,12 @@ class VenueItem:
             VenueItem.selected_item.deselect()
 
         self.dot.setStyle(dict(fillColor='yellow'))
+        self.dot.bringToFront()
         self.li.class_name = 'yellow'
         VenueItem.selected_item = self
 
     def select_and_pan(self, evt):
         self.select()
-        self.dot.bringToFront()
         map.panTo(self.dot.getLatLng())
 
     def select_and_scroll(self, evt):
