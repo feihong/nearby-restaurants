@@ -113,10 +113,8 @@ class VenueItem:
         self.select()
         ul = jq(restaurant_ul)
         li = jq(self.li)
-        # print(li.find('.info').text())
-        # print(ul.scrollTop())
-        # print(li.offset().top)
-        ul.scrollTop(li.offset().top - ul.offset().top + ul.scrollTop())
+        if li.offset().top < 0 or (li.offset().top + li.height() > ul.height()):
+            ul.scrollTop(li.offset().top - ul.offset().top + ul.scrollTop())
 
 
 def get_img(venue):
