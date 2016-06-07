@@ -29,7 +29,7 @@ def main():
 
 
 def nearby_restaurants(address, send):
-    client_id, client_secret = os.environ['FOURSQUARE_CREDENTIALS'].split(',')
+    client_id, client_secret = os.environ['FOURSQUARE_PARAMS'].split(',')
     client = foursquare.Foursquare(
         client_id=client_id, client_secret=client_secret)
     params = dict(
@@ -43,7 +43,14 @@ def nearby_restaurants(address, send):
     # resp = client.venues.explore(params=params)
     import json
     resp = json.load(open('sample_response.json'))
-    send(dict(type='geocode', value=resp['geocode']))
+    proj_id, access_token = os.environ['MAPBOX_PARAMS'].split(',')
+    send(dict(
+        type='map_params',
+        center=resp['geocode']['center'],
+        query_address=resp['geocode']['displayString'],
+        id=proj_id,
+        access_token=access_token,
+    ))
 
     for group in resp['groups']:
         for item in group['items']:

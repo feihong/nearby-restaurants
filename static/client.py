@@ -26,42 +26,40 @@ def on_message(evt):
     obj = json.loads(evt.data)
     if obj.get('type') == 'console':
         print(obj['value'])
-    elif obj.get('type') == 'geocode':
-        geo = obj['value']
-        center = geo['center']
-        init_map(center['lat'], center['lng'], geo['displayString'])
+    elif obj.get('type') == 'map_params':
+        init_map(obj)
     else:
         add_venue(obj)
 
 
-def init_map(lat, lng, address_label):
+def init_map(params):
     global map
     map = L.map('map')
-    map.setView([lat, lng], 15)
+    map.setView(params['center'], 15)
     url = 'https://a.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}'
-    params = dict(
+    tile_params = dict(
       attribution='Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
       maxZoom=18,
-      id='feihong.0abbogke',
-      accessToken='pk.eyJ1IjoiZmVpaG9uZyIsImEiOiJjaXAwbnI2dmQwMHloeHVtNXd4Y3V0M3FsIn0.cuYLb1WqhxoqlZWyS48u4g'
+      id=params['id'],
+      accessToken=params['access_token'],
     )
-    L.tileLayer(url, params).addTo(map)
+    L.tileLayer(url, tile_params).addTo(map)
 
     # One mile circle.
-    L.circle([lat, lng], 1600, dict(
+    L.circle(params['center'], 1600, dict(
         color='blue',
         fillColor='grey',
         fillOpacity=0.2,
     )).addTo(map)
 
     # Center point.
-    dot = L.circleMarker([lat, lng], dict(
+    dot = L.circleMarker(params['center'], dict(
         color='blue',
         fillColor='blue',
         fillOpacity=1,
     )).addTo(map)
     dot.setRadius(5)
-    dot.bindPopup(address_label)
+    dot.bindPopup(params['query_address'])
 
 
 def add_venue(venue):
