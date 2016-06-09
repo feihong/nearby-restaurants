@@ -12,7 +12,7 @@ import os
 import functools
 import foursquare
 import clint.arguments
-from genrunner import GeneratorRunner
+from quip import WebRunner, send
 
 
 def main():
@@ -20,15 +20,13 @@ def main():
     address = args.get(0)
     if args.flags.contains('--web'):
         func = functools.partial(nearby_restaurants, address)
-        runner = GeneratorRunner(func)
+        runner = WebRunner(func)
         runner.run()
     else:
-        noop = lambda *args, **kwargs: None
-        for _ in nearby_restaurants(address, noop):
-            pass
+        nearby_restaurants(address)
 
 
-def nearby_restaurants(address, send):
+def nearby_restaurants(address):
     client_id, client_secret = os.environ['FOURSQUARE_PARAMS'].split(',')
     client = foursquare.Foursquare(
         client_id=client_id, client_secret=client_secret)
@@ -62,7 +60,6 @@ def nearby_restaurants(address, send):
             categories = (c['shortName'] for c in venue['categories'])
             print('Categories:', ', '.join(categories))
             print('-' * 80)
-            yield
 
 
 if __name__ == '__main__':

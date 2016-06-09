@@ -1,8 +1,6 @@
-import json
-from browser.html import *
+from browser.html import LI, DIV, A, B, IMG
 from browser import document, window
-from browser.ajax import ajax
-from browser.websocket import WebSocket
+from quipclient import Client
 
 
 restaurant_ul = document['rlist']
@@ -12,24 +10,17 @@ jq = window.jQuery
 
 
 def main():
-    ws = WebSocket('ws://' + window.location.host + '/status/')
-    ws.bind('open', on_open)
-    ws.bind('message', on_message)
+    client = MyClient()
 
-def on_open(evt):
-    print('Starting...')
-    request = ajax()
-    request.open('GET', '/start/', True)
-    request.send()
 
-def on_message(evt):
-    obj = json.loads(evt.data)
-    if obj.get('type') == 'console':
-        print(obj['value'])
-    elif obj.get('type') == 'map_params':
-        init_map(obj)
-    else:
-        VenueItem(obj)
+class MyClient(Client):
+    def on_object(self, obj):
+        if obj.get('type') == 'error':
+            print(obj['value'])
+        elif obj.get('type') == 'map_params':
+            init_map(obj)
+        else:
+            VenueItem(obj)
 
 
 def init_map(params):
@@ -96,7 +87,7 @@ class VenueItem:
         self.dot.setStyle(dict(fillColor='red'))
         self.li.class_name = ''
 
-    def select(self):
+    def _select(self):
         if VenueItem.selected_item:
             VenueItem.selected_item.deselect()
 
@@ -106,14 +97,14 @@ class VenueItem:
         VenueItem.selected_item = self
 
     def select_and_pan(self, evt):
-        self.select()
+        self._select()
         map.panTo(self.dot.getLatLng())
 
     def select_and_scroll(self, evt):
-        self.select()
+        self._select()
         ul = jq(restaurant_ul)
         li = jq(self.li)
-        if li.offset().top < 0 or (li.offset().top + li.height() > ul.height()):
+        if li.offset().top < 0 or (li.offset().top + li.height()) > ul.height():
             ul.scrollTop(li.offset().top - ul.offset().top + ul.scrollTop())
 
 

@@ -1,5 +1,3 @@
 clint
 foursquare
-futures
-pathlib2
-tornado
+quip
