@@ -10,7 +10,6 @@ https://foursquare.com/developers/apps
 from __future__ import print_function
 import os
 import functools
-import foursquare
 import clint.arguments
 from quip import WebRunner, send
 
@@ -27,20 +26,8 @@ def main():
 
 
 def nearby_restaurants(address):
-    client_id, client_secret = os.environ['FOURSQUARE_PARAMS'].split(',')
-    client = foursquare.Foursquare(
-        client_id=client_id, client_secret=client_secret)
-    params = dict(
-        near=address,
-        radius=1600,
-        section='food',
-        venuePhotos=1,
-        openNow=1,
-        sortByDistance=1,
-    )
-    # resp = client.venues.explore(params=params)
-    import json
-    resp = json.load(open('sample_response.json'))
+    resp = get_foursquare_data(address)
+    
     proj_id, access_token = os.environ['MAPBOX_PARAMS'].split(',')
     send(dict(
         type='map_params',
@@ -60,6 +47,24 @@ def nearby_restaurants(address):
             categories = (c['shortName'] for c in venue['categories'])
             print('Categories:', ', '.join(categories))
             print('-' * 80)
+
+
+def get_foursquare_data(address):
+    import foursquare
+    client_id, client_secret = os.environ['FOURSQUARE_PARAMS'].split(',')
+    client = foursquare.Foursquare(
+        client_id=client_id, client_secret=client_secret)
+    params = dict(
+        near=address,
+        radius=1600,
+        section='food',
+        venuePhotos=1,
+        openNow=1,
+        sortByDistance=1,
+    )
+    return client.venues.explore(params=params)
+    # import json
+    # return json.load(open('sample_response.json'))
 
 
 if __name__ == '__main__':
