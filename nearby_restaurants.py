@@ -19,7 +19,7 @@ def main():
     address = args.get(0)
     if args.flags.contains('--web'):
         func = functools.partial(nearby_restaurants, address)
-        runner = WebRunner(func)
+        runner = WebRunner(func, static_file_dir='static')
         runner.run()
     else:
         nearby_restaurants(address)
@@ -27,7 +27,7 @@ def main():
 
 def nearby_restaurants(address):
     resp = get_foursquare_data(address)
-    
+
     proj_id, access_token = os.environ['MAPBOX_PARAMS'].split(',')
     send(dict(
         type='map_params',
@@ -43,7 +43,7 @@ def nearby_restaurants(address):
             send(venue)
             print(venue['name'])
             print(venue['location']['formattedAddress'][0])
-            print('Rating:', venue['rating'])
+            print('Rating:', venue.get('rating', 'N/A'))
             categories = (c['shortName'] for c in venue['categories'])
             print('Categories:', ', '.join(categories))
             print('-' * 80)
