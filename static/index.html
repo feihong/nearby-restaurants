@@ -1,17 +1,19 @@
 -inherit boilerplate.html
 
--block name='title'
+-block title
   Nearby Restaurants
 
-- block name='extrahead'
+- block extrahead
   link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.6/css/materialize.min.css'
   link rel='stylesheet' href='http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css'
   link rel='stylesheet' href='styles.styl'
 
-- block name='extrascript'
+- block scripts
   script src='https://code.jquery.com/jquery-3.0.0.min.js'
   script src='https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.6/js/materialize.min.js'
   script src='http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js'
+  script src='https://cdn.rawgit.com/brython-dev/brython/3.2.6/www/src/brython.js'
+  script type='text/python' src='client.py'
 
 ul#rlist
 div#map

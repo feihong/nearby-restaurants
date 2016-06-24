@@ -10,6 +10,7 @@ https://foursquare.com/developers/apps
 from __future__ import print_function
 import os
 import functools
+
 import clint.arguments
 from quip import WebRunner, send
 
